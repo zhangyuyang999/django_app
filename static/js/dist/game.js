@@ -460,11 +460,10 @@ class AcGamePlayground {
              注册
         </div>
         <br>
-        <div class="ac-game-settings-wechat">
-            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/wechat_logo.webp">
-            <br>
+        <div class="ac-game-settings-acwing">
+            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/acwing.png">
             <div>
-                WeChat一键登录
+                AcWing一键登录
             </div>
         </div>
     </div>
@@ -497,11 +496,10 @@ class AcGamePlayground {
              登陆
         </div>
         <br>
-        <div class="ac-game-settings-wechat">
-            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/wechat_logo.webp">
-            <br>
+        <div class="ac-game-settings-acwing">
+            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/acwing.png">
             <div>
-                WeChat一键登录
+                AcWing一键登录
             </div>
         </div>
     </div>
@@ -525,6 +523,7 @@ class AcGamePlayground {
         this.$register_login = this.$register.find(".ac-game-settings-option");
 
         this.$register.hide()
+        this.$acwing_login = this.$settings.find('.ac-game-settings-acwing img');
         this.root.$ac_game.append(this.$settings)
         this.start()
     }
@@ -533,8 +532,13 @@ class AcGamePlayground {
         this.add_listening_events()
     }
     add_listening_events(){
+        let outer =this
         this.add_listening_events_login()
         this.add_listening_events_register()
+          this.$acwing_login.click(function() {
+            outer.acwing_login();
+        })
+
     }
     add_listening_events_login(){
         let outer =this
@@ -545,6 +549,19 @@ class AcGamePlayground {
             outer.login_on_remote()
         })
     }
+
+    acwing_login() {
+        $.ajax({
+            url: "/settings/acwing/web/apply_code/",
+            type: "GET",
+            success: function(resp) {
+                if (resp.result === "success") {
+                    window.location.replace(resp.apply_code_url);
+                }
+            }
+        });
+    }
+
     login_on_remote(){
         let outer =this
         let username=this.$login_username.val()
