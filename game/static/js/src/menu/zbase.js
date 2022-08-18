@@ -16,6 +16,7 @@ class AcGameMenu {
             </div>
         </div>
         `)
+        this.$menu.hide()
         this.root.$ac_game.append(this.$menu);
         this.$singel_mode = this.$menu.find('.ac-game-menu-field-item-single-mode');
         this.$multi_mode = this.$menu.find('.ac-game-menu-field-item-multi-mode');
@@ -41,8 +42,9 @@ class AcGameMenu {
             console.log("select multi mode")
         })
         this.$settings.click(function () {
-            outer.hide()
+            // outer.hide()
             console.log("select settings")
+            outer.root.settings.logout_on_remote()
         })
     }
 

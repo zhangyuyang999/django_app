@@ -16,6 +16,7 @@ class AcGameMenu {
             </div>
         </div>
         `)
+        this.$menu.hide()
         this.root.$ac_game.append(this.$menu);
         this.$singel_mode = this.$menu.find('.ac-game-menu-field-item-single-mode');
         this.$multi_mode = this.$menu.find('.ac-game-menu-field-item-multi-mode');
@@ -41,8 +42,9 @@ class AcGameMenu {
             console.log("select multi mode")
         })
         this.$settings.click(function () {
-            outer.hide()
+            // outer.hide()
             console.log("select settings")
+            outer.root.settings.logout_on_remote()
         })
     }
 
@@ -241,6 +243,10 @@ requestAnimationFrame(AC_GAME_ANIMAATION);class FireBall extends AcGameObject {
         this.move_length = 0
         this.cur_skill = null
         this.spent_time=0
+        if(this.is_me){
+            this.img = new Image()
+            this.img.src=this.playground.root.settings.photo
+        }
     }
 
     start() {
@@ -259,11 +265,12 @@ requestAnimationFrame(AC_GAME_ANIMAATION);class FireBall extends AcGameObject {
             return false
         })
         this.playground.game_map.$canvas.mousedown(function (e) {
+            const rect=outer.ctx.canvas.getBoundingClientRect()
             if (e.which === 3) {
-                outer.move_to(e.clientX, e.clientY)
+                outer.move_to(e.clientX -rect.left, e.clientY -rect.top)
             } else if (e.which === 1) {
                 if (outer.cur_skill === 'fireball') {
-                    outer.shoot_fireball(e.clientX, e.clientY)
+                    outer.shoot_fireball(e.clientX-rect.left, e.clientY-rect.top)
                 }
                 outer.cur_skill = null
             }
@@ -361,11 +368,20 @@ requestAnimationFrame(AC_GAME_ANIMAATION);class FireBall extends AcGameObject {
     }
 
     render() {
-        this.ctx.beginPath()
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
-        this.ctx.fillStyle = this.color
-        this.ctx.fill()
-
+        if(this.is_me){
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.stroke();
+            this.ctx.clip();
+            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            this.ctx.restore();
+        }else{
+            this.ctx.beginPath()
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+            this.ctx.fillStyle = this.color
+            this.ctx.fill()
+        }
     }
     on_destroy() {
         for (let i = 0; i < this.playground.players.length; i++) {
@@ -383,15 +399,7 @@ class AcGamePlayground {
         
         `)
         this.hide()
-        this.root.$ac_game.append(this.$playground)
-        this.width = this.$playground.width()
-        this.height = this.$playground.height()
-        this.game_map = new GameMap(this)
-        this.players = []
-        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, 'white', this.height * 0.15, true))
-        for (let i = 0; i < 5; i++) {
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.get_random_color(), this.height * 0.15, false))
-        }
+
         this.start()
     }
     get_random_color(){
@@ -405,17 +413,255 @@ class AcGamePlayground {
 
     show() {
         this.$playground.show()
+        this.root.$ac_game.append(this.$playground)
+        this.width = this.$playground.width()
+        this.height = this.$playground.height()
+        this.game_map = new GameMap(this)
+        this.players = []
+        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, 'white', this.height * 0.15, true))
+        for (let i = 0; i < 5; i++) {
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.get_random_color(), this.height * 0.15, false))
+        }
     }
 
     hide() {
         this.$playground.hide()
     }
+}class Settings {
+    constructor(root) {
+        this.root=root
+        this.platform="WEB"
+        if(this.root.AcWingOS)this.platform="ACAPP"
+        this.username=""
+        this.photo=""
+        this.$settings=$(`
+<div class="ac-game-settings">
+    <div class="ac-game-settings-login">
+        <div class="ac-game-settings-title">登陆</div>
+        <div class="ac-game-settings-username">
+            <div class="ac-game-settings-item">
+                <input type="text" placeholder="用户名">
+            </div>
+        </div>
+        <div class="ac-game-settings-password">
+            <div class="ac-game-settings-item">
+                <input type="password" placeholder="密码">
+            </div>
+        </div>
+        <div class="ac-game-settings-submit">
+            <div class="ac-game-settings-item">
+                <button>登陆</button>
+            </div>
+        </div>
+        <div class="ac-game-settings-error-message">
+            
+        </div>
+        <div class="ac-game-settings-option">
+             注册
+        </div>
+        <br>
+        <div class="ac-game-settings-wechat">
+            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/wechat_logo.webp">
+            <br>
+            <div>
+                WeChat一键登录
+            </div>
+        </div>
+    </div>
+    <div class="ac-game-settings-register">
+        <div class="ac-game-settings-title">注册</div>
+        <div class="ac-game-settings-username">
+            <div class="ac-game-settings-item">
+                <input type="text" placeholder="用户名">
+            </div>
+        </div>
+        <div class="ac-game-settings-password ac-game-settings-password-first">
+            <div class="ac-game-settings-item">
+                <input type="password" placeholder="密码">
+            </div>
+        </div>
+        <div class="ac-game-settings-password ac-game-settings-password-second">
+            <div class="ac-game-settings-item">
+                <input type="password" placeholder="确认密码">
+            </div>
+        </div>
+        <div class="ac-game-settings-submit">
+            <div class="ac-game-settings-item">
+                <button>注册</button>
+            </div>
+        </div>
+        <div class="ac-game-settings-error-message">
+            
+        </div>
+        <div class="ac-game-settings-option">
+             登陆
+        </div>
+        <br>
+        <div class="ac-game-settings-wechat">
+            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/wechat_logo.webp">
+            <br>
+            <div>
+                WeChat一键登录
+            </div>
+        </div>
+    </div>
+</div>
+        `)
+        this.$login = this.$settings.find(".ac-game-settings-login");
+        this.$login_username = this.$login.find(".ac-game-settings-username input");
+        this.$login_password = this.$login.find(".ac-game-settings-password input");
+        this.$login_submit = this.$login.find(".ac-game-settings-submit button");
+        this.$login_error_message = this.$login.find(".ac-game-settings-error-message");
+        this.$login_register = this.$login.find(".ac-game-settings-option");
+
+        this.$login.hide();
+
+        this.$register = this.$settings.find(".ac-game-settings-register");
+        this.$register_username = this.$register.find(".ac-game-settings-username input");
+        this.$register_password = this.$register.find(".ac-game-settings-password-first input");
+        this.$register_password_confirm = this.$register.find(".ac-game-settings-password-second input");
+        this.$register_submit = this.$register.find(".ac-game-settings-submit button");
+        this.$register_error_message = this.$register.find(".ac-game-settings-error-message");
+        this.$register_login = this.$register.find(".ac-game-settings-option");
+
+        this.$register.hide()
+        this.root.$ac_game.append(this.$settings)
+        this.start()
+    }
+    start(){
+        this.getinfo()
+        this.add_listening_events()
+    }
+    add_listening_events(){
+        this.add_listening_events_login()
+        this.add_listening_events_register()
+    }
+    add_listening_events_login(){
+        let outer =this
+        this.$login_register.click(function () {
+            outer.register()
+        })
+        this.$login_submit.click(function () {
+            outer.login_on_remote()
+        })
+    }
+    login_on_remote(){
+        let outer =this
+        let username=this.$login_username.val()
+        let password=this.$login_password.val()
+        this.$login_error_message.empty()
+        $.ajax({
+            url: "/settings/login/",
+            type: "GET",
+            data: {
+                username: username,
+                password: password,
+            },
+            success: function (resp) {
+                console.log(resp)
+                if(resp.result==='success'){
+                    location.reload()
+                }else{
+                    outer.$login_error_message.html(resp.result)
+                }
+            }
+        })
+    }
+    register_on_remote(){
+        let outer = this;
+        let username = this.$register_username.val();
+        let password = this.$register_password.val();
+        let password_confirm = this.$register_password_confirm.val();
+        this.$register_error_message.empty();
+
+        $.ajax({
+            url: "/settings/register/",
+            type: "GET",
+            data: {
+                username: username,
+                password: password,
+                password_confirm: password_confirm,
+            },
+            success: function(resp) {
+                if (resp.result === "success") {
+                    location.reload();  // 刷新页面
+                } else {
+                    outer.$register_error_message.html(resp.result);
+                }
+            }
+        });
+
+
+    }
+    logout_on_remote(){
+        if(this.platform==='ACAPP')return false
+         $.ajax({
+                url: "/settings/logout/",
+                type: "GET",
+                success: function(resp) {
+                    console.log(resp.result)
+                    if (resp.result === "success") {
+                        location.reload();
+                    }
+                }
+            });
+
+    }
+    add_listening_events_register(){
+        let outer =this
+        this.$register_login.click(function () {
+            outer.login()
+        })
+        this.$register_submit.click(function () {
+            outer.register_on_remote()
+        })
+    }
+    login(){
+        this.$register.hide()
+        this.$login.show()
+    }
+    register(){
+        this.$login.hide()
+        this.$register.show()
+    }
+
+    getinfo(){
+        let outer =this
+        $.ajax({
+            url: 'http://127.0.0.1:8000/settings/getinfo/',
+            type: 'GET',
+            data: {
+                platform: outer.platform
+            },
+            success: function (resp) {
+                console.log(resp)
+                if(resp.result==='success'){
+                    outer.username=resp.username
+                    outer.photo=resp.photo
+                    outer.hide()
+                    outer.root.menu.show()
+                }else{
+                    outer.login()
+                }
+            }
+        })
+    }
+    hide(){
+        this.$settings.hide()
+    }
+    show(){
+        this.$settings.show()
+    }
 }export class AcGame{
-    constructor(id) {
+    constructor(id,AcWingOS) {
         this.id=id
+        this.AcWingOS=AcWingOS
         this.$ac_game = $('#'+id)
+
+        this.settings=new Settings(this)
         this.menu =new AcGameMenu(this)
         this.playground=new AcGamePlayground(this)
+
         this.start()
     }
     start(){
