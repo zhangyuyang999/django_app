@@ -461,7 +461,7 @@ class AcGamePlayground {
         </div>
         <br>
         <div class="ac-game-settings-acwing">
-            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/acwing.png">
+            <img  width="30" src="https://app3114.acapp.acwing.com.cn/static/image/settings/acwing.png">
             <div>
                 AcWing一键登录
             </div>
@@ -497,7 +497,7 @@ class AcGamePlayground {
         </div>
         <br>
         <div class="ac-game-settings-acwing">
-            <img  width="30" src="http://127.0.0.1:8000/static/image/settings/acwing.png">
+            <img  width="30" src="https://app3114.acapp.acwing.com.cn/static/image/settings/acwing.png">
             <div>
                 AcWing一键登录
             </div>
@@ -528,8 +528,12 @@ class AcGamePlayground {
         this.start()
     }
     start(){
-        this.getinfo()
-        this.add_listening_events()
+        if(this.platform==="ACAPP")this.getinfo_acapp()
+        else {
+            this.getinfo_web()
+            this.add_listening_events()
+        }
+
     }
     add_listening_events(){
         let outer =this
@@ -552,7 +556,7 @@ class AcGamePlayground {
 
     acwing_login() {
         $.ajax({
-            url: "/settings/acwing/web/apply_code/",
+            url: "https://app3114.acapp.acwing.com.cn/settings/acwing/web/apply_code/",
             type: "GET",
             success: function(resp) {
                 if (resp.result === "success") {
@@ -568,7 +572,7 @@ class AcGamePlayground {
         let password=this.$login_password.val()
         this.$login_error_message.empty()
         $.ajax({
-            url: "/settings/login/",
+            url: "https://app3114.acapp.acwing.com.cn/settings/login/",
             type: "GET",
             data: {
                 username: username,
@@ -592,7 +596,7 @@ class AcGamePlayground {
         this.$register_error_message.empty();
 
         $.ajax({
-            url: "/settings/register/",
+            url: "https://app3114.acapp.acwing.com.cn/settings/register/",
             type: "GET",
             data: {
                 username: username,
@@ -613,7 +617,7 @@ class AcGamePlayground {
     logout_on_remote(){
         if(this.platform==='ACAPP')return false
          $.ajax({
-                url: "/settings/logout/",
+                url: "https://app3114.acapp.acwing.com.cn/settings/logout/",
                 type: "GET",
                 success: function(resp) {
                     console.log(resp.result)
@@ -641,11 +645,35 @@ class AcGamePlayground {
         this.$login.hide()
         this.$register.show()
     }
+    acapp_login(appid, redirect_uri, scope, state) {
+        let outer = this;
+        this.root.AcWingOS.api.oauth2.authorize(appid, redirect_uri, scope, state, function(resp) {
+            if (resp.result === "success") {
+                outer.username = resp.username;
+                outer.photo = resp.photo;
+                outer.hide();
+                outer.root.menu.show();
+            }
+        });
+    }
+    getinfo_acapp() {
+        let outer = this;
+        $.ajax({
+            url: "https://app3114.acapp.acwing.com.cn/settings/acwing/acapp/apply_code/",
+            type: "GET",
+            success: function(resp) {
+                if (resp.result === "success") {
+                    outer.acapp_login(resp.appid, resp.redirect_uri, resp.scope, resp.state);
+                }
+            }
+        });
+    }
 
-    getinfo(){
+
+    getinfo_web(){
         let outer =this
         $.ajax({
-            url: 'http://127.0.0.1:8000/settings/getinfo/',
+            url: 'https://app3114.acapp.acwing.com.cn/settings/getinfo/',
             type: 'GET',
             data: {
                 platform: outer.platform
