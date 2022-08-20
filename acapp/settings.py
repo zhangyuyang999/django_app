@@ -25,11 +25,12 @@ SECRET_KEY = 'django-insecure-(abm%(bx6yauor5=4(13%hst)7@)^(z)%sfch+-suty57fgchr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["39.107.125.238", "0.0.0.0", "127.0.0.1","app3114.acapp.acwing.com.cn"]
+ALLOWED_HOSTS = ["39.107.125.238", "0.0.0.0", "127.0.0.1", "app3114.acapp.acwing.com.cn"]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -130,3 +131,15 @@ CACHES = {
     },
 }
 USER_AGENTS_CACHE = 'default'
+
+ASGI_APPLICATION = 'acapp.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+ROOM_CAPACITY = 3
