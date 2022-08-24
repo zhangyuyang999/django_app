@@ -59,7 +59,7 @@ class Player extends AcGameObject {
             return false
         })
         this.playground.game_map.$canvas.mousedown(function (e) {
-            if(outer.playground.state!=="fighting")return false
+            if(outer.playground.state!=="fighting")return true
             const rect = outer.ctx.canvas.getBoundingClientRect()
             if (e.which === 3) {
                 let tx = (e.clientX - rect.left) / outer.playground.scale
@@ -92,21 +92,36 @@ class Player extends AcGameObject {
                 outer.cur_skill = null
             }
         })
-        $(window).keydown(function (e) {
-            if(outer.playground.state!=="fighting")return true
+        this.playground.game_map.$canvas.keydown(function(e) {
+            if (e.which === 13) {  // enter
+                if (outer.playground.mode === "multi mode") {  // 打开聊天框
+                    outer.playground.chat_field.show_input();
+                    return false;
+                }
+            } else if (e.which === 27) {  // esc
+                if (outer.playground.mode === "multi mode") {  // 关闭聊天框
+                    outer.playground.chat_field.hide_input();
+                }
+            }
 
-            if (e.which === 81) {
-                if(outer.fireball_coldtime>outer.eps)return false
-                outer.cur_skill = 'fireball'
-                return false
-            }else if (e.which === 70) {  // f
+            if (outer.playground.state !== "fighting")
+                return true;
+
+            if (e.which === 81) {  // q
+                if (outer.fireball_coldtime > outer.eps)
+                    return true;
+
+                outer.cur_skill = "fireball";
+                return false;
+            } else if (e.which === 70) {  // f
                 if (outer.blink_coldtime > outer.eps)
                     return true;
+
                 outer.cur_skill = "blink";
                 return false;
             }
+        });
 
-        })
     }
 
     blink(tx, ty) {
